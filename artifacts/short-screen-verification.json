@@ -1,0 +1,42 @@
+{
+  "result": "passed",
+  "results": [
+    {
+      "label": "desktop-short",
+      "width": 1280,
+      "height": 720,
+      "toolbarTop": 590,
+      "projectedBottom": 557.5197784578734,
+      "projectedTop": 95.24707192338565,
+      "overflow": false
+    },
+    {
+      "label": "mobile-small",
+      "width": 320,
+      "height": 568,
+      "toolbarTop": 450,
+      "projectedBottom": 419.7589538949917,
+      "projectedTop": 79.37925496703227,
+      "overflow": false
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "height": 844,
+      "toolbarTop": 726,
+      "projectedBottom": 669.317470673509,
+      "projectedTop": 100.70204709155085,
+      "overflow": false
+    },
+    {
+      "label": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "toolbarTop": 870,
+      "projectedBottom": 836.7610840958762,
+      "projectedTop": 91.49774671250994,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

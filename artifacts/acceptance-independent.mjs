@@ -1,0 +1,17 @@
+import {chromium} from 'playwright';
+import {readFile,writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const b=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl']});
+const ctx=await b.newContext({viewport:{width:1280,height:720},hasTouch:true});const p=await ctx.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));
+await p.goto('http://localhost:4173/');await p.waitForFunction(()=>window.__LUNA_READY__);await p.waitForTimeout(1000);
+await p.screenshot({path:'artifacts/acceptance-desktop.png'});
+const info=await p.evaluate(()=>{let n=0;window.__LUNA_VIEWER__.luna.traverse(o=>{if(o.isMesh)n++});return {meshes:n,camera:window.__LUNA_VIEWER__.camera.position.toArray()}});
+await p.locator('canvas').focus();await p.keyboard.press('ArrowRight');const afterKey=await p.evaluate(()=>window.__LUNA_VIEWER__.camera.position.toArray());assert.notDeepEqual(afterKey,info.camera);
+await p.setViewportSize({width:320,height:568});await p.locator('#reset').click();await p.waitForTimeout(1100);await p.screenshot({path:'artifacts/acceptance-mobile-small.png'});
+const mobileStart=await p.evaluate(()=>({pos:window.__LUNA_VIEWER__.camera.position.toArray(),distance:window.__LUNA_VIEWER__.controls.getDistance(),overflow:document.documentElement.scrollWidth>innerWidth}));assert(!mobileStart.overflow);
+const cdp=await ctx.newCDPSession(p);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:140,y:300}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:240,y:300}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForTimeout(300);const touchPos=await p.evaluate(()=>window.__LUNA_VIEWER__.camera.position.toArray());assert.notDeepEqual(touchPos,mobileStart.pos);
+await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:0,x:100,y:320},{id:1,x:220,y:320}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:0,x:60,y:320},{id:1,x:260,y:320}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForTimeout(300);const pinchDistance=await p.evaluate(()=>window.__LUNA_VIEWER__.controls.getDistance());assert(pinchDistance<mobileStart.distance);
+await p.locator('[data-view="portrait"]').click();await p.waitForTimeout(1100);await p.screenshot({path:'artifacts/acceptance-mobile-portrait.png'});
+const glb=await readFile('artifacts/luna.glb');assert.equal(glb.toString('utf8',0,4),'glTF');assert.equal(glb.readUInt32LE(4),2);assert.equal(glb.readUInt32LE(8),glb.length);const jsonLength=glb.readUInt32LE(12);const model=JSON.parse(glb.toString('utf8',20,20+jsonLength));assert(model.meshes.length>150);assert(!model.buffers.some(v=>v.uri));
+assert.equal(errors.length,0);
+const report={result:'approve-functional',productionURL:'http://localhost:4173/',info,keyboardWorks:true,touchRotationWorks:true,pinchZoomWorks:true,mobileStart,pinchDistance,glb:{bytes:glb.length,meshes:model.meshes.length,nodes:model.nodes.length,scenes:model.scenes.length,embeddedBuffers:true},errors};await writeFile('artifacts/acceptance-independent.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));await b.close();

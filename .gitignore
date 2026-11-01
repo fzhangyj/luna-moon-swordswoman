@@ -1,0 +1,17 @@
+node_modules/
+dist/
+test-results/
+*.log
+
+# Local secrets and generated files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+__pycache__/
+.godot/
+*.db
+*.sqlite*

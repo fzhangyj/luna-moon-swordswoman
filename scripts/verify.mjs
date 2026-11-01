@@ -1,0 +1,34 @@
+import { chromium } from 'playwright';
+import { mkdir, writeFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+
+await mkdir('artifacts', { recursive: true });
+const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--enable-webgl','--use-angle=swiftshader']});
+const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+const errors=[];page.on('pageerror',error=>errors.push(error.message));
+await page.goto(process.env.VIEWER_URL||'http://localhost:5173/',{waitUntil:'networkidle'});
+await page.waitForFunction(()=>window.__LUNA_READY__===true);
+await page.waitForTimeout(1100);
+const initial=await page.evaluate(()=>{
+  const {renderer,camera,luna}=window.__LUNA_VIEWER__;let meshes=0,vertices=0;let invalid=false;
+  luna.traverse(o=>{if(o.isMesh){meshes++;vertices+=o.geometry.attributes.position.count;invalid ||= !Number.isFinite(o.geometry.boundingSphere.radius);}});
+  const gl=renderer.getContext(),pixel=new Uint8Array(4);gl.readPixels(Math.floor(gl.drawingBufferWidth*.5),Math.floor(gl.drawingBufferHeight*.53),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+  return {meshes,vertices,triangles:renderer.info.render.triangles,invalid,pixel:[...pixel],position:camera.position.toArray(),width:gl.drawingBufferWidth,height:gl.drawingBufferHeight};
+});
+assert(initial.meshes>150,'The character contains complete 3D parts');assert(initial.vertices>20000);assert(initial.triangles>20000);assert(!initial.invalid);assert(initial.pixel[3]>0,'The canvas draws visible geometry');
+await page.screenshot({path:'artifacts/luna-desktop.png'});
+await page.mouse.move(850,500);await page.mouse.down();await page.mouse.move(1070,500,{steps:16});await page.mouse.up();await page.waitForTimeout(500);
+const orbit=await page.evaluate(()=>window.__LUNA_VIEWER__.camera.position.toArray());assert(Math.abs(orbit[0]-initial.position[0])>.1,'Dragging changes the camera orbit');
+const distanceBefore=await page.evaluate(()=>window.__LUNA_VIEWER__.controls.getDistance());await page.mouse.wheel(0,-250);await page.waitForTimeout(500);const distanceAfter=await page.evaluate(()=>window.__LUNA_VIEWER__.controls.getDistance());assert(distanceAfter<distanceBefore,'Scroll zoom works');
+await page.getByRole('button',{name:'肖像',exact:true}).click();await page.waitForTimeout(1200);assert.equal(await page.evaluate(()=>window.__LUNA_VIEWER__.view),'portrait');await page.screenshot({path:'artifacts/luna-portrait.png'});
+await page.getByRole('button',{name:'背面',exact:true}).click();await page.waitForTimeout(1200);assert((await page.evaluate(()=>window.__LUNA_VIEWER__.camera.position.z))<0);await page.screenshot({path:'artifacts/luna-back.png'});
+await page.getByRole('button',{name:'开始自动旋转',exact:true}).click();const autoA=await page.evaluate(()=>window.__LUNA_VIEWER__.camera.position.x);await page.waitForTimeout(500);const autoB=await page.evaluate(()=>window.__LUNA_VIEWER__.camera.position.x);assert(Math.abs(autoA-autoB)>.01);
+await page.getByRole('button',{name:'重置视角',exact:true}).click();await page.waitForTimeout(1100);assert.equal(await page.evaluate(()=>window.__LUNA_VIEWER__.controls.autoRotate),false);
+await page.getByRole('button',{name:'切换为浅色背景',exact:true}).click();assert(await page.locator('body').evaluate(el=>el.classList.contains('light')));await page.screenshot({path:'artifacts/luna-light.png'});await page.getByRole('button',{name:'切换为深色背景',exact:true}).click();
+await page.setViewportSize({width:390,height:844});await page.waitForTimeout(1000);
+const mobile=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth,canvas:document.querySelector('canvas').getBoundingClientRect().toJSON(),controls:document.querySelector('.controls').getBoundingClientRect().toJSON()}));
+assert(mobile.page<=mobile.viewport,'No horizontal overflow');assert(mobile.controls.x>=0&&mobile.controls.right<=390,'All controls fit on mobile');assert(mobile.canvas.height===844);
+await page.screenshot({path:'artifacts/luna-mobile.png'});
+assert.equal(errors.length,0,`Runtime errors: ${errors.join('; ')}`);
+const report={result:'passed',initial,orbitChanged:true,zoomWorks:true,portraitWorks:true,backViewWorks:true,autoRotationWorks:true,resetWorks:true,backgroundToggleWorks:true,mobile,errors};
+await writeFile('artifacts/verification.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));await browser.close();

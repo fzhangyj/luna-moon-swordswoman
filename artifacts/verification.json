@@ -1,0 +1,54 @@
+{
+  "result": "passed",
+  "initial": {
+    "meshes": 189,
+    "vertices": 103114,
+    "triangles": 163870,
+    "invalid": false,
+    "pixel": [
+      53,
+      68,
+      95,
+      255
+    ],
+    "position": [
+      0.8,
+      3.0127479892761397,
+      13.171625417390594
+    ],
+    "width": 1440,
+    "height": 1000
+  },
+  "orbitChanged": true,
+  "zoomWorks": true,
+  "portraitWorks": true,
+  "backViewWorks": true,
+  "autoRotationWorks": true,
+  "resetWorks": true,
+  "backgroundToggleWorks": true,
+  "mobile": {
+    "page": 390,
+    "viewport": 390,
+    "canvas": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844,
+      "top": 0,
+      "right": 390,
+      "bottom": 844,
+      "left": 0
+    },
+    "controls": {
+      "x": 57.5,
+      "y": 726,
+      "width": 275,
+      "height": 49,
+      "top": 726,
+      "right": 332.5,
+      "bottom": 775,
+      "left": 57.5
+    }
+  },
+  "errors": []
+}

@@ -1,0 +1,16 @@
+{
+  "name": "luna-moon-swordswoman",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:viewer": "node scripts/verify.mjs",
+    "test:short-screens": "node scripts/verify-short-screens.mjs",
+    "export:model": "node scripts/export-model.mjs"
+  },
+  "dependencies": { "three": "^0.180.0" },
+  "devDependencies": { "vite": "^6.1.0", "playwright": "^1.51.0" }
+}

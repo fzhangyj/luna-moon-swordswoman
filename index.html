@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1119" />
+    <meta name="description" content="露娜，一位月光下的剑士。可自由旋转观察的原创二次元 3D 角色。" />
+    <title>露娜 · 月之剑士</title>
+  </head>
+  <body>
+    <main id="app">
+      <div id="viewer" aria-label="露娜三维角色，可拖动旋转并滚动缩放"></div>
+      <header class="topbar"><a class="wordmark" href="./" aria-label="月之剑士首页"><span class="moon-mark"></span>月之剑士 <span class="wordmark-en">LUNA</span></a><span class="collection">角色造型 · 月下初见</span></header>
+      <section class="intro" aria-labelledby="character-name"><p class="eyebrow">THE MOON SWORDSWOMAN</p><h1 id="character-name">露娜<span>Luna</span></h1><p class="description">以月光为刃，<br />与寂静同行。</p><div class="character-details"><span>银月长发</span><span>月纹轻甲</span><span>弦月之刃</span></div></section>
+      <div class="side-caption" aria-hidden="true">SILVER MOON · ORIGINAL CHARACTER</div>
+      <aside class="controls" aria-label="观察控制"><div class="views" role="group" aria-label="镜头取景"><button class="active" data-view="full" aria-pressed="true">全身</button><button data-view="portrait" aria-pressed="false">肖像</button><button data-view="detail" aria-pressed="false">背面</button></div><span class="control-divider"></span><button id="rotate" class="icon-button" aria-label="开始自动旋转" aria-pressed="false"><span class="rotate-icon" aria-hidden="true">↻</span><span>自动旋转</span></button><button id="reset" class="icon-button" aria-label="重置视角"><span aria-hidden="true">⌖</span><span>重置</span></button><button id="background" class="swatch-button" aria-label="切换为浅色背景"><span class="swatch"></span></button></aside>
+      <footer class="footer"><span class="interaction-hint"><span class="mouse-icon" aria-hidden="true"></span><span class="desktop-hint">拖动旋转 · 滚轮缩放</span><span class="mobile-hint">单指旋转 · 双指缩放</span></span><span>月光之下，万物有形。</span></footer>
+      <div class="loading" id="loading" role="status"><span class="loading-moon"></span><p>月光正在凝聚</p></div>
+      <div class="error-panel" id="error" role="alert" hidden><h2>暂时无法呈现角色</h2><p>请使用支持 WebGL 的浏览器，并开启硬件加速后重试。</p><button onclick="location.reload()">重新载入</button></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
